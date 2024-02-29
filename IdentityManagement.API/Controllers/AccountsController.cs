@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using IdentityManagement.API.Model.Requests;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -8,6 +10,17 @@ namespace IdentityManagement.API.Controllers
     [ApiController]
     public class AccountsController : ControllerBase
     {
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
+
+        public AccountsController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, RoleManager<IdentityRole> roleManager)
+        {
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _roleManager = roleManager;
+        }
+
         // GET: api/<AccountsController>
         [HttpGet]
         public IEnumerable<string> Get()
@@ -24,8 +37,12 @@ namespace IdentityManagement.API.Controllers
 
         // POST api/<AccountsController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public ActionResult Login([FromBody] LoginRequest request)
         {
+            if(!ModelState.IsValid)
+                return BadRequest(ModelState);
+            _userManager.FindByEmailAsync(request.Email);
+            
         }
 
         // PUT api/<AccountsController>/5
