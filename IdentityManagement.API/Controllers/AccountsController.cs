@@ -36,7 +36,7 @@ namespace IdentityManagement.API.Controllers
         public async Task<List<AppUser>> GetUser()
         {
             List<AppUser> usersWithUserRole = new();
-            foreach (var user in _userManager.Users)
+            foreach (var user in _userManager.Users.ToList())
             {
                 if (!await _userManager.IsInRoleAsync(user, "User"))
                     usersWithUserRole.Add(user);
