@@ -58,89 +58,97 @@ namespace IdentityManagement.API.Controllers
                 {
                     var roles = await _userManager.GetRolesAsync(userFound); var claims = new List<Claim>()
                     {
-                        new Claim(ClaimTypes.Role,string.Join(',',roles))                       
-                    };                     
-                await _signInManager.SignInWithClaimsAsync(userFound, true, claims);
+                        new Claim(ClaimTypes.Role,string.Join(',',roles))
+                    };
+                    await _signInManager.SignInWithClaimsAsync(userFound, true, claims);
 
-                return Ok("User logged in Successfuly.");
+                    return Ok("User logged in Successfuly.");
+                }
+                else
+                    return BadRequest("Password is not correct.");
             }
-            else
-                return BadRequest("Password is not correct.");
-        }
             else
                 return NotFound($"User with email '{request.Email}' not exists.");
 
-    }
+        }
 
-    [HttpPost("register-user")]
-    public async Task<ActionResult> RegisterUser([FromBody] RegisterRequest request)
-    {
-        string successMessage = string.Empty;
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-        var userFound = await _userManager.FindByEmailAsync(request.Email);
-        if (userFound != null)
-            return BadRequest($"User email '{request.Email}' is already taken. Please try another.");
-        AppUser user = new()
+        [HttpPost("register-user")]
+        public async Task<ActionResult> RegisterUser([FromBody] RegisterRequest request)
         {
-            Email = request.Email,
-            UserName = request.Email,
-            Name = request.Name,
-        };
-        var result = await _userManager.CreateAsync(user, request.Password);
+            string successMessage = string.Empty;
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            var userFound = await _userManager.FindByEmailAsync(request.Email);
+            if (userFound != null)
+                return BadRequest($"User email '{request.Email}' is already taken. Please try another.");
+            AppUser user = new()
+            {
+                Email = request.Email,
+                UserName = request.Email,
+                Name = request.Name,
+            };
+            var result = await _userManager.CreateAsync(user, request.Password);
 
-        if (result.Succeeded)
-            successMessage = "User registered Successfuly.";
-        else
-            return BadRequest(result.Errors);
+            if (result.Succeeded)
+                successMessage = "User registered Successfuly.";
+            else
+                return BadRequest(result.Errors);
 
-        var role = _roleManager.Roles.FirstOrDefault(x => x.Name.Equals("User"));
-        if (role != null)
-        {
+            var role = _roleManager.Roles.FirstOrDefault(x => x.Name.Equals("User"));
+            if (role == null)
+            {
+                var rolCreated = await _roleManager.CreateAsync(new IdentityRole { Name = "User" });
+                if (!rolCreated.Succeeded)
+                    return BadRequest(rolCreated.Errors);
+            }
+
             var roleResult = await _userManager.AddToRoleAsync(user, role.Name);
-            if (!roleResult.Succeeded)
+            if (roleResult.Succeeded)
                 successMessage += "\n" + "User added in User Role successfuly.";
             else
                 return BadRequest(roleResult.Errors);
+
+            return Ok(successMessage);
         }
 
-        return Ok(successMessage);
-    }
-
-    [HttpPost("register-Admin")]
-    public async Task<ActionResult> RegisterAdmin([FromBody] RegisterRequest request)
-    {
-        string successMessage = string.Empty;
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-        var userFound = await _userManager.FindByEmailAsync(request.Email);
-        if (userFound != null)
-            return BadRequest($"User email '{request.Email}' is already taken. Please try another.");
-        AppUser user = new()
+        [HttpPost("register-Admin")]
+        public async Task<ActionResult> RegisterAdmin([FromBody] RegisterRequest request)
         {
-            Email = request.Email,
-            UserName = request.Email,
-            Name = request.Name,
-        };
-        var result = await _userManager.CreateAsync(user, request.Password);
+            string successMessage = string.Empty;
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            var userFound = await _userManager.FindByEmailAsync(request.Email);
+            if (userFound != null)
+                return BadRequest($"User email '{request.Email}' is already taken. Please try another.");
+            AppUser user = new()
+            {
+                Email = request.Email,
+                UserName = request.Email,
+                Name = request.Name,
+            };
+            var result = await _userManager.CreateAsync(user, request.Password);
 
-        if (result.Succeeded)
-            successMessage = "User registered Successfuly.";
-        else
-            return BadRequest(result.Errors);
+            if (result.Succeeded)
+                successMessage = "User registered Successfuly.";
+            else
+                return BadRequest(result.Errors);
 
-        var role = _roleManager.Roles.FirstOrDefault(x => x.Name.Equals("Admin"));
-        if (role != null)
-        {
+            var role = _roleManager.Roles.FirstOrDefault(x => x.Name.Equals("Admin"));
+            if (role == null)
+            {
+                var rolCreated = await _roleManager.CreateAsync(new IdentityRole { Name = "Admin" });
+                if (!rolCreated.Succeeded)
+                    return BadRequest(rolCreated.Errors);
+            }
+
             var roleResult = await _userManager.AddToRoleAsync(user, role.Name);
-            if (!roleResult.Succeeded)
-                successMessage += "\n" + "User added in User Role successfuly.";
+            if (roleResult.Succeeded)
+                successMessage += "\n" + "User added in Admin Role successfuly.";
             else
                 return BadRequest(roleResult.Errors);
+
+            return Ok(successMessage);
         }
 
-        return Ok(successMessage);
     }
-
-}
 }
