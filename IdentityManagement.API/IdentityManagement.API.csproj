@@ -22,7 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Model\Entities\" />
     <Folder Include="Model\Responses\" />
   </ItemGroup>
 

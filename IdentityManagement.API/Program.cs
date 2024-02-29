@@ -1,4 +1,6 @@
 using IdentityManagement.API.Data;
+using IdentityManagement.API.Model.Entities;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -15,7 +17,7 @@ builder.Services.AddSwaggerGen();
 // SQL Server connection
 builder.Services.AddDbContext<IdentityManagementDbContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityManagement")));
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 {
     // Configure identity options here.
     options.Password.RequireDigit = false;
@@ -27,6 +29,8 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<IdentityManagementDbContext>()
 .AddDefaultTokenProviders();
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -37,7 +41,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

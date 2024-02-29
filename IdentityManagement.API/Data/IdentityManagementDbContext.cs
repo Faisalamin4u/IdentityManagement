@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using IdentityManagement.API.Model.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace IdentityManagement.API.Data
@@ -8,7 +9,8 @@ namespace IdentityManagement.API.Data
         public IdentityManagementDbContext(DbContextOptions<IdentityManagementDbContext> options) : base(options)
 
         {
-
+           
         }
+        public DbSet<AppUser> AppUsers { get; set; }
     }
 }
